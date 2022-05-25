@@ -18,6 +18,7 @@ async function run() {
         
         const serviceCollection = client.db('go-car-mechanic').collection('services');
         const orderCollection = client.db('go-car-mechanic').collection('orders');
+        const reviewCollection = client.db('go-car-mechanic').collection('review');
 
 
 
@@ -44,6 +45,20 @@ async function run() {
             const orders = await orderCollection.find(query).toArray();
             res.send(orders); 
         })
+
+
+          // POST API for review
+          app.post('/review', async (req, res) => {
+            const service = req.body;
+            console.log('hit the post api', service);
+
+            const result = await reviewCollection.insertOne(service);
+            console.log(result);
+            res.json(result)
+        });
+
+
+       
 
 
     }
