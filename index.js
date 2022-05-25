@@ -58,7 +58,12 @@ async function run() {
         });
 
 
-       
+        // GET API for review
+        app.get('/review', async (req, res) => {
+            const cursor = reviewCollection.find({});
+            const services = await cursor.toArray();
+            res.send(services);
+        });
 
 
     }
