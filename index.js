@@ -17,7 +17,12 @@ async function run() {
         await client.connect();
         
         const serviceCollection = client.db('go-car-mechanic').collection('services');
+        const orderCollection = client.db('go-car-mechanic').collection('orders');
 
+
+
+
+        // load all my data 
         app.get('/service', async(req,res) =>{
             const query = {};
             const cursor = serviceCollection.find(query);
@@ -25,7 +30,16 @@ async function run() {
             res.send(services);
         })
 
+        // post my order 
+        app.post('/order', async(req,res) => {
+            const order = req.body;
+            const result = await orderCollection.insertOne(order);
+            res.send(result);
+        })
+
         
+
+
     }
     finally{
 
