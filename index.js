@@ -19,6 +19,7 @@ async function run() {
         const serviceCollection = client.db('go-car-mechanic').collection('services');
         const orderCollection = client.db('go-car-mechanic').collection('orders');
         const reviewCollection = client.db('go-car-mechanic').collection('review');
+        const userCollection = client.db('go-car-mechanic').collection('users');
 
 
 
@@ -64,6 +65,20 @@ async function run() {
             const services = await cursor.toArray();
             res.send(services);
         });
+
+
+        // for set user in database
+        app.put('/user/:email', async(req, res) => {
+            const email = req.params.email;
+            const user = req.body;
+            const filter = { email: email };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: user,
+            };
+            const result = await userCollection.updateOne(filter, updateDoc, options);
+            res.send(result);
+        })
 
 
     }
