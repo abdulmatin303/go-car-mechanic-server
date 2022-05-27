@@ -1,4 +1,4 @@
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const express = require('express')
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
@@ -45,8 +45,8 @@ async function run() {
 
 
 
-         // POST API for added products/tools
-         app.post('/service', async (req, res) => {
+        // POST API for added products/tools
+        app.post('/service', async (req, res) => {
             const service = req.body;
             console.log('hit the post api', service);
 
@@ -63,6 +63,22 @@ async function run() {
             const services = await cursor.toArray();
             res.send(services);
         })
+
+
+        //  delete products or tools
+        app.delete('/service/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            console.log('query: ',query);
+            const result = await serviceCollection.deleteOne(query);
+            console.log('result: ',result);
+            res.json(result);
+        })
+
+
+
+
+
 
         // post my order 
         app.post('/order', async (req, res) => {
@@ -169,7 +185,7 @@ async function run() {
             const services = await cursor.toArray();
             res.send(services);
         });
-        
+
 
         // load single specific (only login user) myProfile       
         app.get('/myProfile', async (req, res) => {
@@ -180,7 +196,7 @@ async function run() {
 
         })
 
-        
+
 
 
         // POST API for myProfile
@@ -194,7 +210,7 @@ async function run() {
         });
 
 
-        
+
 
 
     }
