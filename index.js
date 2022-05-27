@@ -42,6 +42,7 @@ async function run() {
         const reviewCollection = client.db('go-car-mechanic').collection('review');
         const userCollection = client.db('go-car-mechanic').collection('users');
         const myProfileCollection = client.db('go-car-mechanic').collection('myProfile');
+        const myPortfolioCollection = client.db('go-car-mechanic').collection('myPortfolio');
 
 
 
@@ -208,6 +209,28 @@ async function run() {
             console.log(result);
             res.json(result)
         });
+
+
+
+        // POST API for myPortfolio
+        app.post('/myPortfolio', async (req, res) => {
+            const service = req.body;
+            console.log('hit the post api', service);
+
+            const result = await myPortfolioCollection.insertOne(service);
+            console.log(result);
+            res.json(result)
+        });
+
+
+         // load single specific (only login user) myPortfolio       
+         app.get('/myPortfolio', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email };
+            const orders = await myPortfolioCollection.find(query).toArray();
+            return res.send(orders);
+
+        })
 
 
 
