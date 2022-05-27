@@ -154,7 +154,12 @@ async function run() {
         })
 
 
-
+        //  Show All myProfile in Dashboard
+        app.get('/showAllProfile', async (req, res) => {
+            const cursor = myProfileCollection.find({});
+            const services = await cursor.toArray();
+            res.send(services);
+        });
         
 
         // load single specific (only login user) myProfile       
