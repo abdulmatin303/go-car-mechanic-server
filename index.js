@@ -41,8 +41,10 @@ async function run() {
         const orderCollection = client.db('go-car-mechanic').collection('orders');
         const reviewCollection = client.db('go-car-mechanic').collection('review');
         const userCollection = client.db('go-car-mechanic').collection('users');
+        const myProfileCollection = client.db('go-car-mechanic').collection('myProfile');
 
 
+         
 
 
         // load all my data 
@@ -112,11 +114,59 @@ async function run() {
         })
 
 
+        // make user in admin
+        app.put('/user/admin/:email', async (req, res) => {
+            const email = req.params.email;
+            const filter = { email: email };
+            const updateDoc = {
+                $set: {role: 'admin'},
+            };
+            const result = await userCollection.updateOne(filter, updateDoc);
+            res.send(result);
+        })
+
+
+        // ----------------
+        // app.put('/user/admin/:email', async (req, res) => {
+        //     const email = req.params.email;
+        //     const requester = req.decoded.email;
+        //     const requesterAccount = await userCollection.findOne({ email: requester });
+        //     if (requesterAccount.role === 'admin') {
+        //         const filter = { email: email };
+        //         const updateDoc = {
+        //             $set: { role: 'admin' },
+        //         };
+        //         const result = await userCollection.updateOne(filter, updateDoc);
+        //         res.send(result);
+        //     }
+        //     else {
+        //         res.status(403).send({message: 'forbidden'});
+        //     }
+
+        // })
+        // ----------------
+
+
         // get user 
         app.get('/user',  verifyJWT, async(req,res)=> {
             const users = await userCollection.find().toArray();
             res.send(users);
         })
+
+
+
+        
+
+
+        // POST API for myProfile
+        app.post('/myProfile', async (req, res) => {
+            const service = req.body;
+            console.log('hit the post api', service);
+
+            const result = await myProfileCollection.insertOne(service);
+            console.log(result);
+            res.json(result)
+        });
 
 
     }
