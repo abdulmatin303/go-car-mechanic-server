@@ -44,7 +44,7 @@ async function run() {
         const myProfileCollection = client.db('go-car-mechanic').collection('myProfile');
 
 
-         
+
 
 
         // load all my data 
@@ -74,7 +74,7 @@ async function run() {
                 return res.send(orders);
             }
             else {
-                return res.status(403).send({message : 'forbidden access'})
+                return res.status(403).send({ message: 'forbidden access' })
             }
         })
 
@@ -119,7 +119,7 @@ async function run() {
             const email = req.params.email;
             const filter = { email: email };
             const updateDoc = {
-                $set: {role: 'admin'},
+                $set: { role: 'admin' },
             };
             const result = await userCollection.updateOne(filter, updateDoc);
             res.send(result);
@@ -148,12 +148,23 @@ async function run() {
 
 
         // get user 
-        app.get('/user',  verifyJWT, async(req,res)=> {
+        app.get('/user', verifyJWT, async (req, res) => {
             const users = await userCollection.find().toArray();
             res.send(users);
         })
 
 
+
+        
+
+        // load single specific (only login user) myProfile       
+        app.get('/myProfile', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email };
+            const orders = await myProfileCollection.find(query).toArray();
+            return res.send(orders);
+
+        })
 
         
 
@@ -167,6 +178,9 @@ async function run() {
             console.log(result);
             res.json(result)
         });
+
+
+        
 
 
     }
