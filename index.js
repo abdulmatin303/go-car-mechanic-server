@@ -45,6 +45,15 @@ async function run() {
 
 
 
+         // POST API for added products/tools
+         app.post('/service', async (req, res) => {
+            const service = req.body;
+            console.log('hit the post api', service);
+
+            const result = await serviceCollection.insertOne(service);
+            console.log(result);
+            res.json(result)
+        });
 
 
         // load all my data 
