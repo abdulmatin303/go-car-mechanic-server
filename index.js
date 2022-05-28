@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 5000;
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 app.use(cors());
 app.use(express.json())
@@ -43,6 +44,7 @@ async function run() {
         const userCollection = client.db('go-car-mechanic').collection('users');
         const myProfileCollection = client.db('go-car-mechanic').collection('myProfile');
         const myPortfolioCollection = client.db('go-car-mechanic').collection('myPortfolio');
+        const paymentCollection = client.db('go-car-mechanic').collection('payments');
 
 
 
@@ -113,6 +115,39 @@ async function run() {
             const order = await orderCollection.findOne(query);
             res.send(order);
         })
+
+
+        // for save payment details in db 
+        app.patch('/order/:id', async(req, res) =>{
+            const id  = req.params.id;
+            const payment = req.body;
+            const filter = {_id: ObjectId(id)};
+            const updatedDoc = {
+              $set: {
+                paid: true,
+                transactionId: payment.transactionId
+              }
+            }
+      
+            const result = await paymentCollection.insertOne(payment);
+            const updatedOrder = await orderCollection.updateOne(filter, updatedDoc);
+            res.send(updatedOrder);
+          })
+
+
+        // payment system 
+        app.post('/create-payment-intent', async(req,res)=> {
+            const service = req.body;
+            const price = service.orderPrice;
+            const amount = price*100;
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: 'usd',
+                payment_method_types:['card']
+            });
+            res.send({clientSecret: paymentIntent.client_secret})
+        });
+
 
 
 
