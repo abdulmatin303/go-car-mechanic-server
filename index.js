@@ -105,6 +105,17 @@ async function run() {
         })
 
 
+
+        //  specific order details load by order id  for payment 
+        app.get('/order/:id', async(req,res)=> {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id)}
+            const order = await orderCollection.findOne(query);
+            res.send(order);
+        })
+
+
+
         // POST API for review
         app.post('/review', async (req, res) => {
             const service = req.body;
