@@ -72,9 +72,9 @@ async function run() {
         app.delete('/service/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
-            console.log('query: ',query);
+            console.log('query: ', query);
             const result = await serviceCollection.deleteOne(query);
-            console.log('result: ',result);
+            console.log('result: ', result);
             res.json(result);
         })
 
@@ -109,43 +109,75 @@ async function run() {
 
 
         //  specific order details load by order id  for payment 
-        app.get('/order/:id', async(req,res)=> {
+        app.get('/order/:id', async (req, res) => {
             const id = req.params.id;
-            const query = { _id: ObjectId(id)}
+            const query = { _id: ObjectId(id) }
             const order = await orderCollection.findOne(query);
             res.send(order);
         })
 
 
         // for save payment details in db 
-        app.patch('/order/:id', async(req, res) =>{
-            const id  = req.params.id;
+        app.patch('/order/:id', async (req, res) => {
+            const id = req.params.id;
             const payment = req.body;
-            const filter = {_id: ObjectId(id)};
+            const filter = { _id: ObjectId(id) };
             const updatedDoc = {
-              $set: {
-                paid: true,
-                transactionId: payment.transactionId
-              }
+                $set: {
+                    paid: true,
+                    transactionId: payment.transactionId
+                }
             }
-      
+
             const result = await paymentCollection.insertOne(payment);
             const updatedOrder = await orderCollection.updateOne(filter, updatedDoc);
             res.send(updatedOrder);
-          })
+        })
+
+
+        // GET API for all order from manageAllOrder
+        app.get('/allOrder', async (req, res) => {
+            const user = orderCollection.find({});
+            const getUser = await user.toArray();
+            // console.log(getUser);
+            res.send(getUser);
+        });
+
+
+        // DELETE API in the side of all orders section from manageAllOrder 
+        app.delete('/allOrder/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await orderCollection.deleteOne(query);
+            res.json(result);
+        })
+
+
+        // approved the status of order from manageAllOrder
+        app.put("/allOrder/:id", async (req, res) => {
+            const id = req.params.id;
+            const data = req.body;
+
+            const filter = { _id: ObjectId(id) };
+            const updateDoc = {
+                $set: data,
+            };
+            const result = await orderCollection.updateOne(filter, updateDoc);
+            res.json(result);
+        });
 
 
         // payment system 
-        app.post('/create-payment-intent', async(req,res)=> {
+        app.post('/create-payment-intent', async (req, res) => {
             const service = req.body;
             const price = service.orderPrice;
-            const amount = price*100;
+            const amount = price * 100;
             const paymentIntent = await stripe.paymentIntents.create({
                 amount: amount,
                 currency: 'usd',
-                payment_method_types:['card']
+                payment_method_types: ['card']
             });
-            res.send({clientSecret: paymentIntent.client_secret})
+            res.send({ clientSecret: paymentIntent.client_secret })
         });
 
 
@@ -186,15 +218,32 @@ async function run() {
         })
 
 
-        // make user in admin
-        app.put('/user/admin/:email', async (req, res) => {
+        // get admin email
+        app.get('/admin/:email', async (req, res) => {
             const email = req.params.email;
-            const filter = { email: email };
-            const updateDoc = {
-                $set: { role: 'admin' },
-            };
-            const result = await userCollection.updateOne(filter, updateDoc);
-            res.send(result);
+            const user = await userCollection.findOne({ email: email });
+            const isAdmin = user.role === 'admin';
+            res.send({ admin: isAdmin });
+        })
+
+
+        // make user in admin
+        app.put('/user/admin/:email', verifyJWT, async (req, res) => {
+            const email = req.params.email;
+            const requester = req.decoded.email;
+            const requesterAccount = await userCollection.findOne({ email: requester });
+            if (requesterAccount.role === 'admin') {
+                const filter = { email: email };
+                const updateDoc = {
+                    $set: { role: 'admin' },
+                };
+                const result = await userCollection.updateOne(filter, updateDoc);
+                res.send(result);
+            }
+            else {
+                res.status(403).send({ message: 'forbidden' });
+            }
+
         })
 
 
@@ -269,8 +318,8 @@ async function run() {
         });
 
 
-         // load single specific (only login user) myPortfolio       
-         app.get('/myPortfolio', async (req, res) => {
+        // load single specific (only login user) myPortfolio       
+        app.get('/myPortfolio', async (req, res) => {
             const email = req.query.email;
             const query = { email: email };
             const orders = await myPortfolioCollection.find(query).toArray();
